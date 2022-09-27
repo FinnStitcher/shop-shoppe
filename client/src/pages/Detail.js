@@ -3,22 +3,38 @@ import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
 
 import { QUERY_PRODUCTS } from '../utils/queries';
+import {UPDATE_PRODUCTS} from '../utils/actions';
+import {useStoreContext} from '../utils/GlobalState';
+
 import spinner from '../assets/spinner.gif';
 
 function Detail() {
-  const { id } = useParams();
+    const {id} = useParams();
+    const [currentProduct, setCurrentProduct] = useState({});
 
-  const [currentProduct, setCurrentProduct] = useState({});
+    const [state, dispatch] = useStoreContext();
+    const {products} = state;
+    const {loading, data} = useQuery(QUERY_PRODUCTS);
 
-  const { loading, data } = useQuery(QUERY_PRODUCTS);
-
-  const products = data?.products || [];
-
-  useEffect(() => {
-    if (products.length) {
-      setCurrentProduct(products.find((product) => product._id === id));
-    }
-  }, [products, id]);
+    useEffect(() => {
+        // first check if tehre's anything in the global products array, and find the current one in there
+        if (products.length) {
+            setCurrentProduct(products.find(product => product._id === id));
+        } else if (data) {
+            // if there's nothing in global state - that is, if you've never been here before, because state isn't the database! -
+            // it gets all the product data to update global state
+            // now there's something in the products array, and useEffect will ee it update and the first if statement will run
+            dispatch({
+                type: UPDATE_PRODUCTS,
+                products: data.products
+            });
+        }
+    }, [products, data, dispatch, id]);
+    // watching for changes in:
+    // - global products array
+    // - database products array
+    // - dispatch object, no idea how that works out here
+    // - id in the url
 
   return (
     <>
