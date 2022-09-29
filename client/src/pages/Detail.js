@@ -18,6 +18,7 @@ function Detail() {
     const {products, cart} = state;
     const {loading, data} = useQuery(QUERY_PRODUCTS);
 
+    // get data for product
     useEffect(() => {
         // first check if tehre's anything in the global products array, and find the current one in there
         if (products.length) {
@@ -54,20 +55,32 @@ function Detail() {
     const addToCart = () => {
         const itemInCart = cart.find((cartItem) => cartItem._id === id);
 
+        // if this item is already in the cart, update the quantity
         if (itemInCart) {
             dispatch({
                 type: UPDATE_CART_QUANTITY,
                 _id: id,
                 purchaseQuantity: parseInt(itemInCart.purchaseQuantity) + 1
             });
+
+            idbPromise('cart', 'put', {
+                ...itemInCart,
+                purchaseQuantity: parseInt(itemInCart.purchaseQuantity) + 1
+            });
         } else {
+            // else, add to cart with quantity of 1
             dispatch({
                 type: ADD_TO_CART,
                 product: {
                     ...currentProduct,
                     purchaseQuantity: 1
                 }
-            });            
+            });
+
+            idbPromise('cart', 'put', {
+                ...currentProduct,
+                purchaseQuantity: 1
+            });
         }
     };
 
@@ -75,7 +88,9 @@ function Detail() {
         dispatch({
             type: REMOVE_FROM_CART,
             _id: currentProduct._id
-        })
+        });
+
+        idbPromise('cart', 'delete', {...currentProduct});
     }
 
   return (
