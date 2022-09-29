@@ -5,6 +5,7 @@ import { useQuery } from '@apollo/client';
 import {QUERY_PRODUCTS} from '../utils/queries';
 import {UPDATE_PRODUCTS, UPDATE_CART_QUANTITY, REMOVE_FROM_CART, ADD_TO_CART} from '../utils/actions';
 import {useStoreContext} from '../utils/GlobalState';
+import {idbPromise} from '../utils/helpers';
 
 import spinner from '../assets/spinner.gif';
 import Cart from '../components/Cart';
@@ -24,11 +25,24 @@ function Detail() {
         } else if (data) {
             // if there's nothing in global state - that is, if you've never been here before, because state isn't the database! -
             // it gets all the product data to update global state
-            // now there's something in the products array, and useEffect will ee it update and the first if statement will run
+            // now there's something in the products array, and useEffect will see it update and the first if statement will run
             dispatch({
                 type: UPDATE_PRODUCTS,
                 products: data.products
             });
+
+            // put in idb store
+            data.products.forEach(product => {
+                idbPromise('products', 'put', product);
+            });
+        } else if (!loading) {
+            // no internet connection - get data from idb
+            idbPromise('products', 'get').then(idbProducts => {
+                dispatch({
+                    type: UPDATE_PRODUCTS,
+                    products: idbProducts
+                })
+            })
         }
     }, [products, data, dispatch, id]);
     // watching for changes in:

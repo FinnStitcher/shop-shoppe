@@ -14,7 +14,7 @@ const StoreProvider = ({ value = [], ...props }) => {
     // state = most up-to-date version of it
     // dispatch = action object
     const [state, dispatch] = useProductReducer({
-        products: [],
+        products: [], // products = what is currently being displayed on the page
         categories: [],
         currentCategory: '',
         cartOpen: false,
