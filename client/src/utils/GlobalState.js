@@ -16,10 +16,10 @@ const StoreProvider = ({ value = [], ...props }) => {
     const [state, dispatch] = useProductReducer({
         products: [],
         categories: [],
-        currentCategory: ''
+        currentCategory: '',
+        cartOpen: false,
+        cart: []
     });
-
-    console.log(state);
 
     // once useProductReducer has returned the updated state and dispatch, we feed them into Provider so it can do its thing
     return <Provider value={[state, dispatch]} {...props} />
